@@ -21,7 +21,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,7 +45,7 @@ CAN_HandleTypeDef hcan1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+CAN_TxHeaderTypeDef CANTXHeader;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -53,7 +54,7 @@ static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_CAN1_Init(void);
 /* USER CODE BEGIN PFP */
-
+void CAN1_TX(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -92,7 +93,11 @@ int main(void)
   MX_USART2_UART_Init();
   MX_CAN1_Init();
   /* USER CODE BEGIN 2 */
+  // This API move can from initialization mode to normal mode.
+  HAL_CAN_Start(&hcan1);
 
+  // Call function to request transmission.
+  CAN1_TX();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -254,7 +259,35 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void CAN1_TX(void)
+{
+	uint8_t msg[5] = {'H','e','l','l','o'};
+	char msgToTerminal[100];
 
+	// Mailbox
+	uint32_t TXMailbox;
+
+	// Init the header structure.
+	CANTXHeader.DLC = 5;
+	CANTXHeader.StdId = 0x65D;
+	CANTXHeader.IDE = CAN_ID_STD;
+	CANTXHeader.RTR = CAN_RTR_DATA;
+
+	// Add message to the mailbox.
+	if(HAL_CAN_AddTxMessage(&hcan1, &CANTXHeader, msg, &TXMailbox))
+	{
+		Error_Handler();
+	}
+
+	// Check if transmit is pending.
+	while(HAL_CAN_IsTxMessagePending(&hcan1, TXMailbox));
+
+	// Print msg to terminal to know successful transmission.
+	sprintf(msgToTerminal, "CAN message transmitted successfully");
+	HAL_UART_Transmit(&huart2, (uint8_t*)msgToTerminal, strlen(msgToTerminal), 2000);
+
+	HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+}
 /* USER CODE END 4 */
 
 /**
