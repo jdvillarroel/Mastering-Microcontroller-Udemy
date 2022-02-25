@@ -43,9 +43,12 @@
 CAN_HandleTypeDef hcan1;
 
 UART_HandleTypeDef huart2;
+UART_HandleTypeDef huart6;
 
 /* USER CODE BEGIN PV */
 CAN_TxHeaderTypeDef CANTXHeader;
+CAN_RxHeaderTypeDef CANRXHeader;
+CAN_FilterTypeDef CANFilterInit;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -53,8 +56,11 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_CAN1_Init(void);
+static void MX_USART6_UART_Init(void);
 /* USER CODE BEGIN PFP */
 void CAN1_TX(void);
+void CAN1_RX(void);
+void CAN1_filterConfig(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -92,18 +98,30 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_CAN1_Init();
+  MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
+  // Filter configuration
+  CAN1_filterConfig();
   // This API move can from initialization mode to normal mode.
   HAL_CAN_Start(&hcan1);
 
   // Call function to request transmission.
   CAN1_TX();
+
+  HAL_Delay(100);
+
+  CAN1_RX();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  CAN1_TX();
+	  CAN1_RX();
+
+	  HAL_Delay(1000);
+	  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -226,6 +244,39 @@ static void MX_USART2_UART_Init(void)
 }
 
 /**
+  * @brief USART6 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART6_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART6_Init 0 */
+
+  /* USER CODE END USART6_Init 0 */
+
+  /* USER CODE BEGIN USART6_Init 1 */
+
+  /* USER CODE END USART6_Init 1 */
+  huart6.Instance = USART6;
+  huart6.Init.BaudRate = 115200;
+  huart6.Init.WordLength = UART_WORDLENGTH_8B;
+  huart6.Init.StopBits = UART_STOPBITS_1;
+  huart6.Init.Parity = UART_PARITY_NONE;
+  huart6.Init.Mode = UART_MODE_TX_RX;
+  huart6.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart6.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart6) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART6_Init 2 */
+
+  /* USER CODE END USART6_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -283,10 +334,47 @@ void CAN1_TX(void)
 	while(HAL_CAN_IsTxMessagePending(&hcan1, TXMailbox));
 
 	// Print msg to terminal to know successful transmission.
-	sprintf(msgToTerminal, "CAN message transmitted successfully");
-	HAL_UART_Transmit(&huart2, (uint8_t*)msgToTerminal, strlen(msgToTerminal), 2000);
+	sprintf(msgToTerminal, "CAN message transmitted successfully\r\n");
+	HAL_UART_Transmit(&huart6, (uint8_t*)msgToTerminal, strlen(msgToTerminal), 2000);
 
-	HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+}
+
+void CAN1_RX(void)
+{
+	uint8_t RXBuffer[10];
+	char msgToTerminal[100];
+
+	// Check if the FIFO has data to read and waits until data is present.
+	// The API returns the number of messgaes present in the FIFO.
+	while(!HAL_CAN_GetRxFifoFillLevel(&hcan1, CAN_RX_FIFO0));
+
+	if(HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &CANRXHeader, RXBuffer))
+	{
+		Error_Handler();
+	}
+
+	// Print msg to terminal to know successful transmission.
+	sprintf(msgToTerminal, "CAN message received: %s\r\n", RXBuffer);
+	HAL_UART_Transmit(&huart6, (uint8_t*)msgToTerminal, strlen(msgToTerminal), 2000);
+}
+
+void CAN1_filterConfig(void)
+{
+	CANFilterInit.FilterActivation = ENABLE;
+	CANFilterInit.FilterBank = 0;
+	CANFilterInit.FilterFIFOAssignment = CAN_RX_FIFO0;
+	CANFilterInit.FilterIdHigh = 0;
+	CANFilterInit.FilterIdLow = 0;
+	CANFilterInit.FilterMaskIdHigh = 0;
+	CANFilterInit.FilterMaskIdLow = 0;
+	CANFilterInit.FilterMode = CAN_FILTERMODE_IDMASK;
+	CANFilterInit.FilterScale = CAN_FILTERSCALE_32BIT;
+	CANFilterInit.SlaveStartFilterBank = 14;
+
+	if(HAL_CAN_ConfigFilter(&hcan1, &CANFilterInit))
+	{
+		Error_Handler();
+	}
 }
 /* USER CODE END 4 */
 
