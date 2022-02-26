@@ -1,0 +1,10 @@
+19:36:10 **** Incremental Build of configuration Debug for project CAN_ormal_Mode_2N ****
+make -j16 all 
+arm-none-eabi-size   CAN_ormal_Mode_2N.elf 
+   text	   data	    bss	    dec	    hex	filename
+   9580	     20	   1748	  11348	   2c54	CAN_ormal_Mode_2N.elf
+Finished building: default.size.stdout
+ 
+
+19:36:10 Build Finished. 0 errors, 0 warnings. (took 230ms)
+

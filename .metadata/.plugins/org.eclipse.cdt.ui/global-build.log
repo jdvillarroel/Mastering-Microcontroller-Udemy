@@ -1,7 +1,28 @@
-18:41:08 **** Incremental Build of configuration Debug for project CAN_Loopback_IT ****
+19:33:05 **** Incremental Build of configuration Debug for project CAN_ormal_Mode_2N ****
 make -j16 all 
-arm-none-eabi-size   CAN_Loopback_IT.elf 
+arm-none-eabi-size   CAN_ormal_Mode_2N.elf 
    text	   data	    bss	    dec	    hex	filename
-  15588	    120	   1864	  17572	   44a4	CAN_Loopback_IT.elf
+   9580	     20	   1748	  11348	   2c54	CAN_ormal_Mode_2N.elf
+Finished building: default.size.stdout
+ 
+19:34:27 **** Incremental Build of configuration Debug for project CAN_ormal_Mode_2N ****
+make -j16 all 
+arm-none-eabi-size   CAN_ormal_Mode_2N.elf 
+   text	   data	    bss	    dec	    hex	filename
+   9580	     20	   1748	  11348	   2c54	CAN_ormal_Mode_2N.elf
+Finished building: default.size.stdout
+ 
+19:35:22 **** Incremental Build of configuration Debug for project CAN_ormal_Mode_2N ****
+make -j16 all 
+arm-none-eabi-size   CAN_ormal_Mode_2N.elf 
+   text	   data	    bss	    dec	    hex	filename
+   9580	     20	   1748	  11348	   2c54	CAN_ormal_Mode_2N.elf
+Finished building: default.size.stdout
+ 
+19:36:10 **** Incremental Build of configuration Debug for project CAN_ormal_Mode_2N ****
+make -j16 all 
+arm-none-eabi-size   CAN_ormal_Mode_2N.elf 
+   text	   data	    bss	    dec	    hex	filename
+   9580	     20	   1748	  11348	   2c54	CAN_ormal_Mode_2N.elf
 Finished building: default.size.stdout
  
